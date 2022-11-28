@@ -5,6 +5,25 @@ const currentHexes = document.querySelectorAll('.color h2');
 
 let initialColors;
 
+sliders.forEach(slider => {
+    slider.addEventListener('input', hslControls);
+});
+
+colorDivs.forEach((slider, index) => {
+    slider.addEventListener('change', () => {
+        updateTextUI(index);
+    });
+});
+
+
+
+
+
+
+
+
+
+
 function generateHex() {
     return chroma.random();
 }
@@ -39,9 +58,6 @@ function checkTextContrast(color, text) {
     }
 }
 
-randomColors();
-
-
 function colorizeSliders(color, hue, brightness, saturation) {
     const noSat = color.set('hsl.s', 0);
     const fullSat = color.set('hsl.s', 1);
@@ -50,17 +66,49 @@ function colorizeSliders(color, hue, brightness, saturation) {
 
     const midBright = color.set('hsl.l', 0.5);
     const scaleBright = chroma.scale(['black', midBright, "white"]);
-
+    
     saturation.style.backgroundImage = `linear-gradient(to right, ${scaleSat(0)}, ${scaleSat(1)})`;
-
+    
     brightness.style.backgroundImage = `linear-gradient(to right, ${scaleBright(0)}, ${scaleBright(0.5)}, ${scaleBright(1)})`;
-
+    
     hue.style.backgroundImage = `linear-gradient(to right, rgb(204, 75, 75), rgb(204, 204, 75), rgb(75, 204, 75), rgb(75, 204, 204), rgb(75, 75, 204), rgb(204, 75, 204), rgb(204, 75, 75))`;
+}
+
+function hslControls(e) {
+    const index = 
+    e.target.getAttribute('data-hue') ||
+    e.target.getAttribute('data-bright') ||
+    e.target.getAttribute('data-sat');
+    
+    let sliders = e.target.parentElement.querySelectorAll('input[type="range"]');
+    const hue = sliders[0]; 
+    const brightness = sliders[1];
+    const saturation = sliders[2];
+    
+    const bgColor = initialColors[index];
+    // console.log(hue.value);
+    let color = chroma(bgColor)
+    .set('hsl.h', hue.value)
+    .set('hsl.l', brightness.value)
+    .set('hsl.s', saturation.value);
+    
+    colorDivs[index].style.backgroundColor = color;
+}
+
+function updateTextUI(index) {
+    const activeDiv = colorDivs[index];
+    const color = chroma(activeDiv.style.backgroundColor);
+    const textHex = activeDiv.querySelector('h2');
+    const icons = activeDiv.querySelectorAll('.controls button');
+    // console.log(icons); 
+    textHex.innerText = color.hex();
+    checkTextContrast(color, textHex);
+    for (icon of icons) {
+        checkTextContrast(color, icon)
+    }
 }
 
 
 
 
-
-
-
+randomColors();
