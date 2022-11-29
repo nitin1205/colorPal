@@ -3,8 +3,15 @@ const generateBtn = document.querySelector('.generate');
 const sliders = document.querySelectorAll('input[type="range"]');
 const currentHexes = document.querySelectorAll('.color h2');
 const popup = document.querySelector('.copy-container');
+const adjust = document.querySelectorAll('.adjust');
+const lock = document.querySelectorAll('.lock');
+const closeAdjustment = document.querySelectorAll('.close-adjustment');
+const sliderContainer = document.querySelectorAll('.sliders');
 
 let initialColors;
+let savedPaletts = [];
+
+generateBtn.addEventListener('click', randomColors);
 
 sliders.forEach(slider => {
     slider.addEventListener('input', hslControls);
@@ -28,7 +35,23 @@ popup.addEventListener('transitionend', () => {
     popupBox.classList.remove('active');
 });
 
+adjust.forEach((button, index) => {
+    button.addEventListener('click', () => {
+        openAdjustmentPanel(index);
+    });
+});
 
+closeAdjustment.forEach((button, index) => {
+    button.addEventListener('click', () => {
+        closeAdjustmentPanel(index);
+    });
+});
+
+lock.forEach((button, index) => {
+    button.addEventListener("click", e => {
+      lockLayer(e, index);
+    });
+  });
 
 
 
@@ -43,7 +66,13 @@ function randomColors() {
     colorDivs.forEach((div, index) => {
         const hexText = div.children[0];
         const randomColor = generateHex();
-        initialColors.push(randomColor.hex());
+
+        if(div.classList.contains('locked')) {
+            initialColors.push(hexText.innerText);
+            return;
+        } else {
+            initialColors.push(randomColor.hex());
+        }
         div.style.backgroundColor = randomColor;
         hexText.innerHTML = randomColor;
         
@@ -59,6 +88,12 @@ function randomColors() {
     });
 
     resetInputs();
+
+    adjust.forEach((button, index) => {
+        checkTextContrast(initialColors[index], button);
+        checkTextContrast(initialColors[index], lock[index]);
+    })
+
 }
 
 function checkTextContrast(color, text) {
@@ -161,7 +196,41 @@ function copyToClipboard(hex) {
     popupBox.classList.add('active'); 
 }
 
+function openAdjustmentPanel(index) {
+    sliderContainer[index].classList.toggle('active');
+}
 
+function closeAdjustmentPanel(index) {
+    sliderContainer[index].classList.remove('active');
+}
+
+function lockLayer(e, index) {
+    const lockSVG = e.target.children[0];
+    const activeBg = colorDivs[index];
+    activeBg.classList.toggle("locked");
+  
+    if (lockSVG.classList.contains("fa-lock-open")) {
+      e.target.innerHTML = '<i class="fas fa-lock"></i>';
+    } else {
+      e.target.innerHTML = '<i class="fas fa-lock-open"></i>';
+    }
+}
+
+const saveBtn = document.querySelector('.save');
+const submitSave = document.querySelector('.submit-save');
+const closeSave = document.querySelector('.close-save');
+const saveContainer = document.querySelector('.save-container');
+const saveInput = document.querySelector('.save-container input');
+
+saveBtn.addEventListener('click', openPalette);
+
+function openPalette(e) {
+    console.log(e)
+    const popup = saveContainer.children[0];
+    saveContainer.classList.add('active');
+    popup.classList.add('active');
+}
+  
 
 
 
